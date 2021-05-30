@@ -20,21 +20,13 @@
         </activity>
 
         <service
-            android:name=".services.PetService"
+            android:name=".service.PetService"
             android:enabled="true"
-            android:exported="true"></service>
-
-        <receiver android:name="ReceptorLlamadas" >
-            <intent-filter>
-                <action android:name android:name="android intent action PHONE STATE android.intent.action.PHONE_STATE"/>
-            </intent-filter>
-        </receiver>
-
-
+            android:exported="true" />
 
     </application>
 
-    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 

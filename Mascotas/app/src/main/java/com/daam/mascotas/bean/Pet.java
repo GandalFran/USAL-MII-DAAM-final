@@ -116,6 +116,18 @@ public class Pet implements Parcelable, Serializable {
         return Objects.hash(id, date, name, owner, type, vaccinated);
     }
 
+    @Override
+    public String toString() {
+        return "Pet{" +
+                "id='" + id + '\'' +
+                ", date=" + date +
+                ", name='" + name + '\'' +
+                ", owner='" + owner + '\'' +
+                ", type='" + type + '\'' +
+                ", vaccinated=" + vaccinated +
+                '}';
+    }
+
     public String getId() {
         return id;
     }

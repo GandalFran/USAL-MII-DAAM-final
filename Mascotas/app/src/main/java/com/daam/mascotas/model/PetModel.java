@@ -17,8 +17,17 @@ import java.util.List;
 public class PetModel implements Parcelable {
 
     private final List<Pet> pets;
+    
+    private static PetModel instance = null;
 
-    public PetModel(Context context){
+    public static PetModel build(Context context){
+        if(instance == null){
+            PetModel.instance = new PetModel(context);
+        }
+        return instance;
+    }
+
+    private PetModel(Context context){
         this.pets = new ArrayList<>();
     }
 
@@ -87,4 +96,12 @@ public class PetModel implements Parcelable {
         }
     }
 
+    public boolean exists(Pet p) {
+        for(Pet pet: this.pets){
+            if(pet.getId().equals(p.getId())){
+                return true;
+            }
+        }
+        return false;
+    }
 }

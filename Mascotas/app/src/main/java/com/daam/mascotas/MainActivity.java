@@ -2,6 +2,7 @@ package com.daam.mascotas;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Parcelable;
@@ -15,6 +16,7 @@ import android.widget.TextView;
 import com.daam.mascotas.bean.Pet;
 import com.daam.mascotas.bean.PetAdapter;
 import com.daam.mascotas.model.PetModel;
+import com.daam.mascotas.service.PetService;
 
 import java.util.ArrayList;
 
@@ -32,16 +34,16 @@ public class MainActivity extends AppCompatActivity {
     private PetAdapter adapter;
     private boolean isServiceStarted;
 
-    public MainActivity(){
-        this.model  = new PetModel(this);
-    }
-
     @Override
     protected void onCreate(Bundle state) {
         super.onCreate(state);
         setContentView(R.layout.activity_main);
 
         this.isServiceStarted = false;
+
+        // create storage and populate
+        this.model  = PetModel.build(this);
+        this.populate();
 
         // retrieve
         this.petsListView =  findViewById(R.id.pets);
@@ -60,19 +62,20 @@ public class MainActivity extends AppCompatActivity {
             this.petsListView.onRestoreInstanceState(status);
         }
 
-        // create storage and populate
-        this.model  = new PetModel(this);
-        this.populate();
     }
 
     public void switchService(View view){
-        this.button.setText(this.isServiceStarted ? R.string.stop : R.string.start);
 
-        if(this.isServiceStarted){
-
+        if(!this.isServiceStarted){
+            startService(new Intent(MainActivity.this, PetService.class));
         }else{
-
+            stopService(new Intent(MainActivity.this, PetService.class));
         }
+
+        this.button.setText(!this.isServiceStarted ? R.string.stop : R.string.start);
+
+        this.isServiceStarted = ! this.isServiceStarted;
+
     }
 
     private void populate(){
