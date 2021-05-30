@@ -6,7 +6,6 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import com.daam.mascotas.bean.Pet;
-import com.daam.mascotas.model.contentprovider.PetContentProvider;
 import com.daam.mascotas.model.loader.JSONPetLoaderImpl;
 import com.daam.mascotas.model.loader.PetLoader;
 import com.daam.mascotas.model.loader.TextPetLoaderImpl;
@@ -17,12 +16,10 @@ import java.util.List;
 
 public class PetModel implements Parcelable {
 
-    private List<Pet> pets;
-    private PetContentProvider provider;
+    private final List<Pet> pets;
 
     public PetModel(Context context){
         this.pets = new ArrayList<>();
-        this.provider = new PetContentProvider(context, this.pets);
     }
 
     protected PetModel(Parcel in) {
@@ -52,24 +49,18 @@ public class PetModel implements Parcelable {
     }
 
     public void add(Pet p){
-        this.provider.insert(PetContentProvider.CONTENT_URI, p.buildContentValues());
         this.pets.add(p);
     }
 
     public void addAll(List<Pet> newPets){
-        for(Pet p: newPets){
-            this.provider.insert(PetContentProvider.CONTENT_URI, p.buildContentValues());
-        }
         this.pets.addAll(newPets);
     }
 
     public void update(Pet p, int position){
-        this.provider.update(PetContentProvider.CONTENT_URI, p.buildContentValues(), String.format("id = %s", p.getId()), null);
         this.pets.set(position, p);
     }
 
     public void remove(Pet p){
-        this.provider.delete(PetContentProvider.CONTENT_URI, String.format("id = %s", p.getId()), null);
         this.pets.remove(p);
     }
 
@@ -80,18 +71,19 @@ public class PetModel implements Parcelable {
     public void load(String url){
 
         PetLoader loader;
-        if(url.toLowerCase().contains("txt")){
-            loader = new TextPetLoaderImpl();
-        }else if(url.toLowerCase().contains("json")){
+        if(url.toLowerCase().contains("json")){
             loader = new JSONPetLoaderImpl();
-        }else{
+        }else if(url.toLowerCase().contains("xml")){
             loader = new XMLPetLoaderImpl();
+        }else{
+            loader = new TextPetLoaderImpl();
         }
 
         try {
             List<Pet> loadedPets = loader.load(url);
             this.addAll(loadedPets);
         }catch (Exception ignored){
+            ignored.printStackTrace();
         }
     }
 

@@ -5,12 +5,18 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.daam.mascotas.R;
+
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
 public class PetAdapter extends ArrayAdapter<Pet> {
+
+    private final static String DATE_FORMAT = "dd/MM/yyyy";
 
     private final List<Pet> pets;
 
@@ -34,29 +40,42 @@ public class PetAdapter extends ArrayAdapter<Pet> {
 
         Pet p = this.getItem(position);
 
-        /*
         // if view is null, retrieve corresponding row
         if (rowView == null) {
-            rowView = LayoutInflater.from(this.getContext()).inflate(R.layout.listview_user, parent, false);
+            rowView = LayoutInflater.from(this.getContext()).inflate(R.layout.elem_pet, parent, false);
         }
 
         // retrieve
-        TextView name = rowView.findViewById(R.id.name);
-        TextView age = rowView.findViewById(R.id.age);
-        TextView date = rowView.findViewById(R.id.date);
-        TextView phone = rowView.findViewById(R.id.phone);
-        TextView englishLevel = rowView.findViewById(R.id.englishLevel);
-        TextView drivingLicense = rowView.findViewById(R.id.drivingLicense);
+        TextView dateTv = rowView.findViewById(R.id.date);
+        TextView petaNameTv = rowView.findViewById(R.id.petName);
+        ImageView pictureIv =  rowView.findViewById(R.id.picture);
+        TextView ownerNameTv = rowView.findViewById(R.id.ownerName);
+        TextView vaccinatedNoTv = rowView.findViewById(R.id.vaccinatedNo);
+        TextView vaccinatedYesTv = rowView.findViewById(R.id.vaccinatedYes);
 
         // populate
-        name.setText(String.format("%s %s", p.getName(), p.getSurname()));
-        age.setText(p.getAge());
-        date.setText(Utils.getDateString(p.getDate()));
-        phone.setText(p.getPhone());
-        englishLevel.setText(rowView.getResources().getString(R.string.english) + ' ' + this.getEnglishLevelString(rowView,p.getEnglishLevel()) );
-        drivingLicense.setText(rowView.getResources().getString(R.string.license) + ' ' + (p.isDrivingLicense() ? rowView.getResources().getString(R.string.yes):rowView.getResources().getString(R.string.no)));
-        */
+        petaNameTv.setText(p.getName());
+        ownerNameTv.setText(p.getOwner());
+        pictureIv.setImageResource(getImage(p));
+        dateTv.setText(new SimpleDateFormat(DATE_FORMAT).format(p.getDate()));
+        vaccinatedNoTv.setVisibility(p.isVaccinated() ? View.GONE : View.VISIBLE);
+        vaccinatedYesTv.setVisibility(p.isVaccinated() ? View.VISIBLE : View.GONE);
 
         return rowView;
+    }
+
+    private int getImage(Pet p){
+        String petType = p.getType().toLowerCase();
+        switch(petType){
+            case "gato":
+                return  R.drawable.cat;
+            case "pájaro":
+                return  R.drawable.bird;
+            case "perro":
+                return  R.drawable.dog;
+            case "otro":
+            default:
+                return  R.drawable.other;
+        }
     }
 }
