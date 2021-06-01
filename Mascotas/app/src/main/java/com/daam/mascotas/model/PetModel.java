@@ -1,7 +1,5 @@
 package com.daam.mascotas.model;
 
-import android.content.ContentValues;
-import android.content.Context;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -16,18 +14,22 @@ import java.util.List;
 
 public class PetModel implements Parcelable {
 
+    private int events;
+    private int processed;
     private final List<Pet> pets;
     
     private static PetModel instance = null;
 
-    public static PetModel build(Context context){
+    public static PetModel build(){
         if(instance == null){
-            PetModel.instance = new PetModel(context);
+            PetModel.instance = new PetModel();
         }
         return instance;
     }
 
-    private PetModel(Context context){
+    private PetModel(){
+        this.events = 0;
+        this.processed = 0;
         this.pets = new ArrayList<>();
     }
 
@@ -57,24 +59,16 @@ public class PetModel implements Parcelable {
         d.writeTypedList(this.pets);
     }
 
-    public void add(Pet p){
-        this.pets.add(p);
-    }
-
-    public void addAll(List<Pet> newPets){
-        this.pets.addAll(newPets);
-    }
-
-    public void update(Pet p, int position){
-        this.pets.set(position, p);
-    }
-
-    public void remove(Pet p){
-        this.pets.remove(p);
-    }
-
-    public List<Pet> getPets() {
-        return pets;
+    public void update(List<Pet> newPets, boolean updatePetList){
+        for(Pet p: newPets){
+            if(!this.exists(p)){
+                if(updatePetList) {
+                    this.processed++;
+                    this.pets.add(0, p);
+                }
+                this.events++;
+            }
+        }
     }
 
     public void load(String url){
@@ -90,9 +84,8 @@ public class PetModel implements Parcelable {
 
         try {
             List<Pet> loadedPets = loader.load(url);
-            this.addAll(loadedPets);
+            this.pets.addAll(loadedPets);
         }catch (Exception ignored){
-            ignored.printStackTrace();
         }
     }
 
@@ -104,4 +97,17 @@ public class PetModel implements Parcelable {
         }
         return false;
     }
+
+    public List<Pet> getPets() {
+        return pets;
+    }
+
+    public int getEvents() {
+        return events;
+    }
+
+    public int getProcessed() {
+        return processed;
+    }
+
 }

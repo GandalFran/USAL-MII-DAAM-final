@@ -8,4 +8,5 @@
     <string name="processedLabel">Procesamientos:</string>
     <string name="notification_description">Example notification</string>
     <string name="notification_title">MI NOTIFICACION</string>
+    <string name="numReceivedLabel">Number of pets received</string>
 </resources>

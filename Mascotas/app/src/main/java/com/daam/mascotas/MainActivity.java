@@ -3,7 +3,6 @@ package com.daam.mascotas;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.view.View;
@@ -42,7 +41,7 @@ public class MainActivity extends AppCompatActivity {
         this.isServiceStarted = false;
 
         // create storage and populate
-        this.model  = PetModel.build(this);
+        this.model  = PetModel.build();
         this.populate();
 
         // retrieve
@@ -101,4 +100,13 @@ public class MainActivity extends AppCompatActivity {
             }
         }).start();
     }
+
+    public void updateUi(){
+        TextView numEventsTv =  findViewById(R.id.numEvents);
+        TextView numProcessedTv =  findViewById(R.id.numProcessed);
+        numEventsTv.setText(this.model.getEvents());
+        numProcessedTv.setText(this.model.getProcessed());
+    }
+
+
 }

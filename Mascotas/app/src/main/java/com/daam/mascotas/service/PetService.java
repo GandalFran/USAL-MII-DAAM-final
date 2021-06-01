@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.os.Parcelable;
 import android.util.Log;
+import android.widget.RemoteViews;
 
 import androidx.annotation.Nullable;
 
@@ -26,8 +27,11 @@ import java.util.List;
 
 public class PetService extends Service {
 
+    public static final String PET_KEY = "PET_KEY";
+    public static final int SUCCESS_NOTIFICATION_INTENT = 0;
+    public static final int DISMISS_NOTIFICATION_INTENT = 1;
+
     private static final int PET_NOTIFICATION_ID = 1;
-    private static final String PET_KEY = "PET_KEY";
     private final String NOTIFICATION_CHANNEL_ID = "com.daam.mascotas.petservice";
 
     private List<Pet> receivedPets;
@@ -36,8 +40,17 @@ public class PetService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        this.buildNotificationChannel();
         this.receivedPets = new ArrayList<>();
+
+        // build notification channel
+        this.manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        String name = getString(R.string.notification_title);
+        String description = getString(R.string.notification_description);
+        NotificationChannel channel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, name, NotificationManager.IMPORTANCE_HIGH);
+        channel.setDescription(description);
+        channel.enableLights(true);
+        channel.enableVibration(true);
+        this.manager.createNotificationChannel(channel);
     }
 
     @Override
@@ -46,21 +59,7 @@ public class PetService extends Service {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                while(true) {
-                    Log.d("ASDF", "POLLING");
-                    // sleep
-                    try {
-                        Thread.sleep(Constants.PET_POLL_INTERVAL);
-                    } catch (InterruptedException e) {
-                    }
-
-                    // retrieve p
-                    Pet p = PetService.this.checkForPets(Constants.CENTINEL_URL);
-                    if(p!=null && !PetService.this.exists(p)){
-                        PetService.this.receivedPets.add(p);
-                        PetService.this.notifyPet(p);
-                    }
-                }
+                PetService.this.pollForPets();
             }
         }).start();
 
@@ -76,6 +75,24 @@ public class PetService extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         return null;
+    }
+
+    public void pollForPets(){
+        while(true) {
+            Log.d("ASDF", "POLLING");
+            // sleep
+            try {
+                Thread.sleep(Constants.PET_POLL_INTERVAL);
+            } catch (InterruptedException e) {
+            }
+
+            // retrieve p
+            Pet p = PetService.this.checkForPets(Constants.CENTINEL_URL);
+            if(p!=null && !PetService.this.exists(p)){
+                PetService.this.receivedPets.add(0, p);
+                PetService.this.notifyPets();
+            }
+        }
     }
 
     public Pet checkForPets(String url){
@@ -99,28 +116,25 @@ public class PetService extends Service {
         return p;
     }
 
-    private void buildNotificationChannel() {
-        this.manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        String name = getString(R.string.notification_title);
-        String description = getString(R.string.notification_description);
-        NotificationChannel channel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, name, NotificationManager.IMPORTANCE_HIGH);
-        channel.setDescription(description);
-        channel.enableLights(true);
-        channel.enableVibration(true);
-        this.manager.createNotificationChannel(channel);
-    }
+    private void notifyPets(){
+        Log.d("ASDF", "Nueva mascota");
 
-    private void notifyPet(Pet p){
-        Log.d("ASDF", "Nueva mascota: " + p.toString());
         Intent intent = new Intent(this, PetServiceReceiver.class);
-        intent.putExtra(PET_KEY, (Parcelable) p);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
+        intent.putParcelableArrayListExtra(PET_KEY, (ArrayList<? extends Parcelable>) this.receivedPets);
+        PendingIntent successPendingIntent = PendingIntent.getBroadcast (getApplicationContext(), SUCCESS_NOTIFICATION_INTENT, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent deletePendingIntent = PendingIntent.getBroadcast (getApplicationContext(), DISMISS_NOTIFICATION_INTENT, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        RemoteViews contentView = new RemoteViews("com.daam.mascotas", R.layout.notification_layout);
+        contentView.setTextViewText(R.id.numReceivedNotification, Integer.valueOf(this.receivedPets.size()).toString());
+
         Notification.Builder builder = new Notification.Builder(
                 getApplicationContext(), NOTIFICATION_CHANNEL_ID)
                 .setSmallIcon(android.R.drawable.stat_sys_warning)
                 .setAutoCancel(true)
-                .setContentTitle("Notificación desde la IU")
-                .setContentIntent(pendingIntent);
+                .setContentIntent(successPendingIntent)
+                .setDeleteIntent(deletePendingIntent)
+                .setCustomContentView(contentView);
+
         this.manager.notify(PET_NOTIFICATION_ID, builder.build());
     }
 

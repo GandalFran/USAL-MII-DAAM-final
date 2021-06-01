@@ -24,6 +24,8 @@
             android:enabled="true"
             android:exported="true" />
 
+        <receiver android:name=".service.PetServiceReceiver" />
+
     </application>
 
     <uses-permission android:name="android.permission.INTERNET"/>
