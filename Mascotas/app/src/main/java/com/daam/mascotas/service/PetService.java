@@ -117,7 +117,7 @@ public class PetService extends Service {
     }
 
     private void notifyPets(){
-        Log.d("ASDF", "Nueva mascota");
+        Log.d("ASDF", "Nueva mascota" + Integer.valueOf(this.receivedPets.size()).toString());
 
         Intent intent = new Intent(this, PetServiceReceiver.class);
         intent.putParcelableArrayListExtra(PET_KEY, (ArrayList<? extends Parcelable>) this.receivedPets);
