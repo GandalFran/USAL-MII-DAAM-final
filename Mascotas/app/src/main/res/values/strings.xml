@@ -6,4 +6,6 @@
     <string name="start">Start</string>
     <string name="eventsLabel">Eventos:</string>
     <string name="processedLabel">Procesamientos:</string>
+    <string name="notification_description">Example notification</string>
+    <string name="notification_title">MI NOTIFICACION</string>
 </resources>
