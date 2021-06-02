@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
+import com.daam.mascotas.MainActivity;
 import com.daam.mascotas.bean.Pet;
 import com.daam.mascotas.model.PetModel;
 
@@ -21,23 +22,21 @@ public class PetServiceReceiver extends BroadcastReceiver {
         Log.d("ASDF", String.format("recibido"));
 
         // check if notification is cancelled or accepted
-        int requestCode = intent.getExtras().getInt("requestCode");
-        boolean updatePetList = (requestCode == PetService.SUCCESS_NOTIFICATION_INTENT);
-
-        if(updatePetList){
-            Log.d("ASDF", "updating list");
-        }else{
-            Log.d("ASDF", "NOT updating list");
-        }
+        boolean cancel = intent.getExtras().getBoolean(PetService.CANCEL_KEY);
 
         // update list and number of events
-        List<Pet> pets = (List<Pet>) intent.getSerializableExtra(PetService.PET_KEY);
-        PetModel model = PetModel.build();
-        model.update(pets, updatePetList);
+        if(!cancel) {
+            PetModel.build().commitPending();
+        }else{
+            PetModel.build().dismissPending();
+        }
 
         // update UI
-        // MainActivity.getInstance().updateUi();
+        Intent intent1 = new Intent(context, MainActivity.class);
+        intent1.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        context.startActivity(intent1);
     }
+
 
 
 

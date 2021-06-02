@@ -4,20 +4,25 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import com.daam.mascotas.bean.Pet;
+import com.daam.mascotas.bean.PetAdapter;
 import com.daam.mascotas.model.loader.JSONPetLoaderImpl;
 import com.daam.mascotas.model.loader.PetLoader;
 import com.daam.mascotas.model.loader.TextPetLoaderImpl;
 import com.daam.mascotas.model.loader.XMLPetLoaderImpl;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class PetModel implements Parcelable {
 
     private int events;
     private int processed;
+    private PetAdapter adapter;
     private final List<Pet> pets;
-    
+    private final List<Pet> pendingPets;
+
     private static PetModel instance = null;
 
     public static PetModel build(){
@@ -31,10 +36,12 @@ public class PetModel implements Parcelable {
         this.events = 0;
         this.processed = 0;
         this.pets = new ArrayList<>();
+        this.pendingPets = new ArrayList<>();
     }
 
     protected PetModel(Parcel in) {
         this.pets = in.createTypedArrayList(Pet.CREATOR);
+        this.pendingPets = in.createTypedArrayList(Pet.CREATOR);
     }
 
     public static final Creator<PetModel> CREATOR = new Creator<PetModel>() {
@@ -57,18 +64,23 @@ public class PetModel implements Parcelable {
     @Override
     public void writeToParcel(Parcel d, int flags) {
         d.writeTypedList(this.pets);
+        d.writeTypedList(this.pendingPets);
     }
 
-    public void update(List<Pet> newPets, boolean updatePetList){
-        for(Pet p: newPets){
-            if(!this.exists(p)){
-                if(updatePetList) {
-                    this.processed++;
-                    this.pets.add(0, p);
-                }
-                this.events++;
-            }
-        }
+    public void addPending(Pet p){
+        this.pendingPets.add(p);
+        this.events++;
+    }
+
+    public void commitPending(){
+        this.processed += this.pendingPets.size();
+        this.adapter.addAll(this.pendingPets);
+        this.pendingPets.clear();
+        this.adapter.sort(Pet::compareTo);
+    }
+
+    public void dismissPending(){
+        this.pendingPets.clear();
     }
 
     public void load(String url){
@@ -89,15 +101,6 @@ public class PetModel implements Parcelable {
         }
     }
 
-    public boolean exists(Pet p) {
-        for(Pet pet: this.pets){
-            if(pet.getId().equals(p.getId())){
-                return true;
-            }
-        }
-        return false;
-    }
-
     public List<Pet> getPets() {
         return pets;
     }
@@ -110,4 +113,7 @@ public class PetModel implements Parcelable {
         return processed;
     }
 
+    public List<Pet> getPending() {
+        return this.pendingPets;
+    }
 }

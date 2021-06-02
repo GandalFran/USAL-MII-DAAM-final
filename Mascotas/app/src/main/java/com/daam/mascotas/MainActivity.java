@@ -24,7 +24,9 @@ public class MainActivity extends AppCompatActivity {
     public static final String PETS_LIST_STATUS = "PETS_LIST_STATUS";
 
     private Button button;
+    private TextView numEventsTv;
     private ListView petsListView;
+    private TextView numProcessedTv;
     private ProgressBar progressBar;
     private LinearLayout elementsLayout1;
     private LinearLayout elementsLayout2;
@@ -47,9 +49,11 @@ public class MainActivity extends AppCompatActivity {
         // retrieve
         this.petsListView =  findViewById(R.id.pets);
         this.button =  findViewById(R.id.switchButton);
+        this.numEventsTv =  findViewById(R.id.numEvents);
         this.progressBar =  findViewById(R.id.progressBar);
         this.elementsLayout1 =  findViewById(R.id.textLayout1);
         this.elementsLayout2 =  findViewById(R.id.textLayout2);
+        this.numProcessedTv =  findViewById(R.id.numProcessed);
 
         // set adapter
         this.adapter = new PetAdapter(this, (ArrayList<Pet>) this.model.getPets());
@@ -61,6 +65,12 @@ public class MainActivity extends AppCompatActivity {
             this.petsListView.onRestoreInstanceState(status);
         }
 
+    }
+
+    @Override
+    protected void onActivityResult(int code, int result, Intent data) {
+        super.onActivityResult(code, result, data);
+        this.updateUi();
     }
 
     public void switchService(View view){
@@ -101,11 +111,10 @@ public class MainActivity extends AppCompatActivity {
         }).start();
     }
 
-    public void updateUi(){
-        TextView numEventsTv =  findViewById(R.id.numEvents);
-        TextView numProcessedTv =  findViewById(R.id.numProcessed);
-        numEventsTv.setText(this.model.getEvents());
-        numProcessedTv.setText(this.model.getProcessed());
+    private void updateUi(){
+        this.numEventsTv.setText(this.model.getEvents());
+        this.numProcessedTv.setText(this.model.getProcessed());
+        this.adapter.notifyDataSetChanged();
     }
 
 

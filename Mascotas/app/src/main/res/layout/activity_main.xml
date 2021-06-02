@@ -44,7 +44,7 @@
             android:layout_height="wrap_content"
             android:padding="10dp"
             android:layout_gravity="right"
-            android:text="eventsNumber" />
+            android:text="0" />
 
     </LinearLayout>
 
@@ -69,7 +69,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="right"
             android:padding="10dp"
-            android:text="processedNumber" />
+            android:text="0" />
     </LinearLayout>
 
     <ListView

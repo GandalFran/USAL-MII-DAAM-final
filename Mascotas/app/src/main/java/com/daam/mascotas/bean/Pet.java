@@ -11,7 +11,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Objects;
 
-public class Pet implements Parcelable, Serializable {
+public class Pet implements Parcelable, Serializable, Comparable<Pet> {
 
     public final static String PET_ID_KEY = "PET_ID_KEY";
     public final static String PET_DATE_KEY = "PET_DATE_KEY";
@@ -22,6 +22,7 @@ public class Pet implements Parcelable, Serializable {
 
     private final static String DATE_SERIALIZATION_FORMAT = "yyyy-MM-dd";
 
+    private int order;
     private String id;
     private Date date;
     private String name;
@@ -30,6 +31,7 @@ public class Pet implements Parcelable, Serializable {
     private boolean vaccinated;
 
     public Pet(String id, Date date, String name, String owner, String type, boolean vaccinated) {
+        this.order = 0;
         this.id = id;
         this.date = date;
         this.name = name;
@@ -39,25 +41,13 @@ public class Pet implements Parcelable, Serializable {
     }
 
     protected Pet(Parcel in) {
+        this.order = 0;
         this.id = in.readString();
         this.date = (Date) in.readSerializable();
         this.name = in.readString();
         this.owner = in.readString();
         this.type = in.readString();
         this.vaccinated = (in.readInt() == 1);
-    }
-
-    protected Pet(ContentValues values){
-        this.id = (String) values.get(Pet.PET_ID_KEY);
-        this.name = (String) values.get(Pet.PET_NAME_KEY);
-        this.owner = (String) values.get(Pet.PET_OWNER_KEY);
-        this.type = (String) values.get(Pet.PET_TYPE_KEY);
-        this.vaccinated = (boolean) values.get(Pet.PET_VACCINATED_KEY);
-        try {
-            this.date = new SimpleDateFormat(DATE_SERIALIZATION_FORMAT).parse((String)values.get(Pet.PET_DATE_KEY));
-        } catch (ParseException e) {
-            this.date = null;
-        }
     }
 
     public static final Creator<Pet> CREATOR = new Creator<Pet>() {
@@ -174,5 +164,18 @@ public class Pet implements Parcelable, Serializable {
 
     public void setVaccinated(boolean vaccinated) {
         this.vaccinated = vaccinated;
+    }
+
+    public int getOrder() {
+        return order;
+    }
+
+    public void setOrder(int order) {
+        this.order = order;
+    }
+
+    @Override
+    public int compareTo(Pet o) {
+        return Integer.compare(this.order, o.order);
     }
 }

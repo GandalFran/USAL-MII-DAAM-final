@@ -17,6 +17,7 @@ import androidx.annotation.Nullable;
 import com.daam.mascotas.Constants;
 import com.daam.mascotas.R;
 import com.daam.mascotas.bean.Pet;
+import com.daam.mascotas.model.PetModel;
 import com.daam.mascotas.model.loader.JSONPetLoaderImpl;
 import com.daam.mascotas.model.loader.PetLoader;
 import com.daam.mascotas.model.loader.TextPetLoaderImpl;
@@ -28,19 +29,19 @@ import java.util.List;
 public class PetService extends Service {
 
     public static final String PET_KEY = "PET_KEY";
-    public static final int SUCCESS_NOTIFICATION_INTENT = 0;
-    public static final int DISMISS_NOTIFICATION_INTENT = 1;
+    public static final String CANCEL_KEY = "CANCEL_KEY";
 
     private static final int PET_NOTIFICATION_ID = 1;
     private final String NOTIFICATION_CHANNEL_ID = "com.daam.mascotas.petservice";
 
-    private List<Pet> receivedPets;
+    private int currentOrder = 0;
     private NotificationManager manager;
 
     @Override
     public void onCreate() {
         super.onCreate();
-        this.receivedPets = new ArrayList<>();
+
+        this.currentOrder = 0;
 
         // build notification channel
         this.manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -79,18 +80,19 @@ public class PetService extends Service {
 
     public void pollForPets(){
         while(true) {
-            Log.d("ASDF", "POLLING");
+            // retrieve p
+            Pet p = PetService.this.checkForPets(Constants.CENTINEL_URL);
+            p.setOrder(this.currentOrder++);
+
+            if(p!=null && !PetService.this.exists(p)){
+                PetModel.build().addPending(p);
+                PetService.this.notifyPets();
+            }
+
             // sleep
             try {
                 Thread.sleep(Constants.PET_POLL_INTERVAL);
             } catch (InterruptedException e) {
-            }
-
-            // retrieve p
-            Pet p = PetService.this.checkForPets(Constants.CENTINEL_URL);
-            if(p!=null && !PetService.this.exists(p)){
-                PetService.this.receivedPets.add(0, p);
-                PetService.this.notifyPets();
             }
         }
     }
@@ -117,15 +119,18 @@ public class PetService extends Service {
     }
 
     private void notifyPets(){
-        Log.d("ASDF", "Nueva mascota" + Integer.valueOf(this.receivedPets.size()).toString());
-
         Intent intent = new Intent(this, PetServiceReceiver.class);
-        intent.putParcelableArrayListExtra(PET_KEY, (ArrayList<? extends Parcelable>) this.receivedPets);
-        PendingIntent successPendingIntent = PendingIntent.getBroadcast (getApplicationContext(), SUCCESS_NOTIFICATION_INTENT, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        PendingIntent deletePendingIntent = PendingIntent.getBroadcast (getApplicationContext(), DISMISS_NOTIFICATION_INTENT, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        intent.putExtra(CANCEL_KEY, false);
+        intent.putParcelableArrayListExtra(PET_KEY, (ArrayList<? extends Parcelable>) PetModel.build().getPending());
+        PendingIntent successPendingIntent = PendingIntent.getBroadcast (getApplicationContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        Intent cancelIntent = new Intent(this, PetServiceReceiver.class);
+        cancelIntent.putExtra(CANCEL_KEY, true);
+        cancelIntent.putParcelableArrayListExtra(PET_KEY, (ArrayList<? extends Parcelable>) PetModel.build().getPending());
+        PendingIntent deletePendingIntent = PendingIntent.getBroadcast (getApplicationContext(), 1, cancelIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         RemoteViews contentView = new RemoteViews("com.daam.mascotas", R.layout.notification_layout);
-        contentView.setTextViewText(R.id.numReceivedNotification, Integer.valueOf(this.receivedPets.size()).toString());
+        contentView.setTextViewText(R.id.numReceivedNotification, Integer.valueOf(PetModel.build().getPending().size()).toString());
 
         Notification.Builder builder = new Notification.Builder(
                 getApplicationContext(), NOTIFICATION_CHANNEL_ID)
@@ -139,7 +144,7 @@ public class PetService extends Service {
     }
 
     private boolean exists(Pet p) {
-        for(Pet pet: this.receivedPets){
+        for(Pet pet: PetModel.build().getPending()){
             if(pet.getId().equals(p.getId())){
                 return true;
             }
