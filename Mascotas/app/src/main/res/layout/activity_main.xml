@@ -6,79 +6,25 @@
     android:orientation="vertical"
     tools:context=".MainActivity">
 
-    <ProgressBar
-        android:id="@+id/progressBar"
-        style="?android:attr/progressBarStyle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:visibility="visible"
-        android:layout_weight="1" />
 
     <Button
-        android:id="@+id/switchButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:onClick="switchService"
-        android:text="@string/start"
-        android:visibility="visible" />
-
-    <LinearLayout
-        android:id="@+id/textLayout1"
+        android:id="@+id/button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:visibility="visible">
+        android:text="@string/normal_activity"
+        android:onClick="normal"/>
 
-        <TextView
-            android:id="@+id/eventLabel"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:padding="10dp"
-            android:layout_gravity="right"
-            android:text="@string/eventsLabel" />
-
-        <TextView
-            android:id="@+id/numEvents"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:padding="10dp"
-            android:layout_gravity="right"
-            android:text="0" />
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/textLayout2"
+    <Button
+        android:id="@+id/button2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:visibility="visible">
+        android:text="@string/add_pet"
+        android:onClick="addPet"/>
 
-        <TextView
-            android:id="@+id/numProcessedLabel"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:padding="10dp"
-            android:layout_gravity="right"
-            android:text="@string/processedLabel" />
-
-        <TextView
-            android:id="@+id/numProcessed"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="right"
-            android:padding="10dp"
-            android:text="0" />
-    </LinearLayout>
-
-    <ListView
-        android:visibility="visible"
-        android:id="@+id/pets"
+    <Button
+        android:id="@+id/button3"
         android:layout_width="match_parent"
-        android:layout_height="507dp"
-        android:layout_weight="1"
-        android:padding="10dp" >
-    </ListView>
-
+        android:layout_height="wrap_content"
+        android:text="@string/retrieve_certain_pets"
+        android:onClick="selectPets"/>
 </LinearLayout>

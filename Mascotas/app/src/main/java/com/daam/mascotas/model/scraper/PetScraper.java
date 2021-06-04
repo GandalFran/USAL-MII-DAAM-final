@@ -1,18 +1,24 @@
 package com.daam.mascotas.model.scraper;
 
+import android.util.Log;
+
 import com.daam.mascotas.Constants;
 import com.daam.mascotas.bean.Pet;
+import com.daam.mascotas.service.PetService;
 import com.google.gson.Gson;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.safety.Whitelist;
 
 import java.io.BufferedReader;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -49,26 +55,52 @@ class JSONPetModel {
 
 public class PetScraper {
 
-    public List<Pet> getPetList(int minId, int maxId) throws IOException {
-
-        // make post to get HTML
-        String html = this.requestPetList(Constants.PET_LIST_URL, Constants.PET_LIST_USER, minId, maxId);
-
-        // parse with Jsoup
-        Document doc = Jsoup.parse(html);
-        Element link = doc.select("a").first();
-        String url = link.attr("href");
-
-        // parse with json
-        String json = this.requestJson(url);
-        Gson gson = new Gson();
-        JSONPetModel[] rawPets = gson.fromJson(json, JSONPetModel[].class);
+    public List<Pet> getPetList(int minId, int maxId) throws IOException, InterruptedException {
         List<Pet> pets = new ArrayList<>();
-        for(JSONPetModel rawP: rawPets){
-            pets.add(rawP.toPet());
-        }
+
+        // thread created to allow network requests
+        Thread t = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                // make post to get HTML
+                String html = null;
+                try {
+                    html = PetScraper.this.requestPetList(Constants.PET_LIST_URL, Constants.PET_LIST_USER, minId, maxId);
+                } catch (IOException e) {
+                    return;
+                }
+
+                // parse with Jsoup
+                Document doc = Jsoup.parse(html);
+                Element link = doc.select("a").first();
+                String url = link.attr("href");
+
+                // parse with json
+                String jsonHtml = null;
+                try {
+                    jsonHtml = PetScraper.this.requestJson(url);
+                } catch (IOException e) {
+                    return;
+                }
+
+                // retrieve json from html
+                doc = Jsoup.parse(jsonHtml);
+                String json  = Jsoup.clean(doc.select("body").first().text(), Whitelist.basic()).replace("&quot;","\"");
+
+                // parse json
+                Gson gson = new Gson();
+                JSONPetModel[] rawPets = gson.fromJson(json, JSONPetModel[].class);
+                for(JSONPetModel rawP: rawPets){
+                    pets.add(rawP.toPet());
+                }
+            }
+        });
+
+        t.start();
+        t.join();
 
         return pets;
+
     }
 
     public void registerPet(Pet p) throws IOException {
@@ -76,11 +108,20 @@ public class PetScraper {
     }
 
     private String requestPetList(String url, String user, int minId, int maxId) throws IOException {
+
+        String params = String.format("usuario=%s&limit_inf=%s&limit_sup=%s&data_format=%s",user, Integer.valueOf(minId).toString(), Integer.valueOf(maxId).toString(),"JSON");
+        byte[] postData = params.getBytes( StandardCharsets.UTF_8 );
+        int postDataLength = postData.length;
+
         HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
-        connection.setRequestProperty("usuario", user);
-        connection.setRequestProperty("limit_inf", Integer.valueOf(minId).toString());
-        connection.setRequestProperty("limit_sup", Integer.valueOf(maxId).toString());
-        connection.setRequestProperty("data_format", "JSON");
+        connection.setRequestMethod("POST");
+        connection.setRequestProperty( "Content-Type", "application/x-www-form-urlencoded");
+        connection.setRequestProperty( "charset", "utf-8");
+        connection.setRequestProperty( "Content-Length", Integer.toString( postDataLength ));
+        try( DataOutputStream wr = new DataOutputStream( connection.getOutputStream())) {
+            wr.write( postData );
+        }
+
         connection.connect();
         BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), "utf-8"));
 
@@ -108,15 +149,28 @@ public class PetScraper {
     }
 
     private String requestRegisterPet(String url, String user, Pet p) throws IOException {
-        HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
-        connection.setRequestProperty("usuario", user);
-        connection.setRequestProperty("nMascota", p.getName());
-        connection.setRequestProperty("nPropietario", p.getOwner());
-        connection.setRequestProperty("Fecha_adop", new SimpleDateFormat("yyyy-MM-dd").format(p.getDate()));
-        connection.setRequestProperty("Tipo_mascota", p.getType());
-        connection.setRequestProperty("comentario: ", "");
+
+        String params = String.format("usuario=%s&nMascota=%s&nPropietario=%s&Fecha_adop=%s&Tipo_mascota=%s&comentario=%s"
+            ,user
+            ,p.getName()
+            , p.getOwner()
+            , new SimpleDateFormat("yyyy-MM-dd").format(p.getDate())
+            , p.getType()
+            , ""
+        );
         if(p.isVaccinated()) {
-            connection.setRequestProperty("vacuna", "Vacunado");
+            params += "&vacuna=Vacunado";
+        }
+        byte[] postData = params.getBytes( StandardCharsets.UTF_8 );
+        int postDataLength = postData.length;
+
+        HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
+        connection.setRequestMethod("POST");
+        connection.setRequestProperty( "Content-Type", "application/x-www-form-urlencoded");
+        connection.setRequestProperty( "charset", "utf-8");
+        connection.setRequestProperty( "Content-Length", Integer.toString( postDataLength ));
+        try( DataOutputStream wr = new DataOutputStream( connection.getOutputStream())) {
+            wr.write( postData );
         }
         connection.connect();
         BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), "utf-8"));

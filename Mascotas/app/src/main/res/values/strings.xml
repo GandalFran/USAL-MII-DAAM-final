@@ -9,4 +9,11 @@
     <string name="notification_description">Example notification</string>
     <string name="notification_title">MI NOTIFICACION</string>
     <string name="numReceivedLabel">Number of pets received: </string>
+    <string name="normal_activity">normal_activity</string>
+    <string name="add_pet">add_pet</string>
+    <string name="retrieve_certain_pets">retrieve_certain_pets</string>
+    <string name="min">min</string>
+    <string name="max">max</string>
+    <string name="load">load</string>
+    <string name="exit">exit</string>
 </resources>
