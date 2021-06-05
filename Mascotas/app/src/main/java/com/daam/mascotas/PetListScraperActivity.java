@@ -3,6 +3,7 @@ package com.daam.mascotas;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -17,6 +18,7 @@ import java.util.List;
 
 public class PetListScraperActivity extends AppCompatActivity {
 
+    private static final String PET_LIST_KEY = "PET_LIST_KEY";
     private List<Pet> pets;
     private PetAdapter adapter;
 
@@ -38,8 +40,27 @@ public class PetListScraperActivity extends AppCompatActivity {
 
         this.adapter = new PetAdapter(this, (ArrayList<Pet>) this.pets);
         this.petsListView.setAdapter(this.adapter);
+
+        // retrieve the instance status
+        if (savedInstanceState != null) {
+            this.pets = savedInstanceState.getParcelableArrayList(PET_LIST_KEY);
+            this.adapter.notifyDataSetChanged();
+        }
     }
 
+    @Override
+    public void onRestoreInstanceState(Bundle savedState) {
+        if(savedState != null) {
+            this.pets = savedState.getParcelableArrayList(PET_LIST_KEY);
+            this.adapter.notifyDataSetChanged();
+        }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle currentState) {
+        currentState.putParcelableArrayList(PET_LIST_KEY, (ArrayList<? extends Parcelable>) this.pets);
+        super.onSaveInstanceState(currentState);
+    }
     public void load(View view){
 
         int minId, maxId;

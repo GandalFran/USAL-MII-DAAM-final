@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.DatePickerDialog;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.view.View;
 import android.widget.DatePicker;
 import android.widget.EditText;
@@ -16,7 +17,6 @@ import com.daam.mascotas.bean.Pet;
 import com.daam.mascotas.bean.PetAdapter;
 import com.daam.mascotas.model.scraper.PetScraper;
 
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -28,6 +28,7 @@ public class PetAddScraperActivity extends AppCompatActivity {
 
     private final static String [] PET_TYPES = {"Perro","Gato","Pájaro","Otro"};
     private final static boolean [] VACCINATED_TYPES = {false, true};
+    private static final String PET_LIST_KEY = "PET_LIST_KEY";
 
     private List<Pet> pets;
     private PetAdapter adapter;
@@ -59,6 +60,26 @@ public class PetAddScraperActivity extends AppCompatActivity {
         this.pets = new ArrayList<>();
         this.adapter = new PetAdapter(this, (ArrayList<Pet>) this.pets);
         this.petsListView.setAdapter(this.adapter);
+
+        // retrieve the instance status
+        if (savedInstanceState != null) {
+            this.pets = savedInstanceState.getParcelableArrayList(PET_LIST_KEY);
+            this.adapter.notifyDataSetChanged();
+        }
+    }
+
+    @Override
+    public void onRestoreInstanceState(Bundle savedState) {
+        if(savedState != null) {
+            this.pets = savedState.getParcelableArrayList(PET_LIST_KEY);
+            this.adapter.notifyDataSetChanged();
+        }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle currentState) {
+        currentState.putParcelableArrayList(PET_LIST_KEY, (ArrayList<? extends Parcelable>) this.pets);
+        super.onSaveInstanceState(currentState);
     }
 
     public void add(View view){

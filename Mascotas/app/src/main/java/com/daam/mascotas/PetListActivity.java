@@ -24,8 +24,6 @@ import java.util.ArrayList;
 
 public class PetListActivity extends AppCompatActivity {
 
-    public static final String PETS_LIST_STATUS = "PETS_LIST_STATUS";
-
     private Button button;
     private static TextView numEventsTv;
     private ListView petsListView;
