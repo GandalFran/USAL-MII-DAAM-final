@@ -103,8 +103,44 @@ public class PetScraper {
 
     }
 
-    public void registerPet(Pet p) throws IOException {
-        String response = this.requestRegisterPet(Constants.PET_ADD_URL, Constants.PET_LIST_USER,p);
+    public Pet registerPet(Pet p, String comment) throws InterruptedException {
+        Pet [] pet = new Pet[]{null};
+
+        // thread created to allow network requests
+        Thread t = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                // make post to get HTML
+                String html = null;
+                try {
+                    html = PetScraper.this.requestRegisterPet(Constants.PET_ADD_URL, Constants.PET_LIST_USER,p,comment);
+                } catch (IOException e) {
+                    return;
+                }
+
+                // parse with Jsoup
+                Document doc = Jsoup.parse(html);
+                String body = doc.select("body").first().toString();
+                String [] bodyParts = body.split(" <br />");
+                String csvLine = bodyParts[bodyParts.length-1].replace(" \n</body>","");
+                String [] csvLineAttrs = csvLine.split(" ");
+
+                Date date = null;
+                try {
+                    date = new SimpleDateFormat("dd/MM/yyyy").parse(csvLineAttrs[3]);
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+
+                pet[0] = new Pet(csvLineAttrs[0], date, csvLineAttrs[1], csvLineAttrs[2]
+                        ,csvLineAttrs[4] ,csvLineAttrs[5].equals("Si"));
+
+            }
+        });
+        t.start();
+        t.join();
+
+        return pet[0];
     }
 
     private String requestPetList(String url, String user, int minId, int maxId) throws IOException {
@@ -148,7 +184,7 @@ public class PetScraper {
         return sb.toString();
     }
 
-    private String requestRegisterPet(String url, String user, Pet p) throws IOException {
+    private String requestRegisterPet(String url, String user, Pet p, String comment) throws IOException {
 
         String params = String.format("usuario=%s&nMascota=%s&nPropietario=%s&Fecha_adop=%s&Tipo_mascota=%s&comentario=%s"
             ,user
@@ -156,7 +192,7 @@ public class PetScraper {
             , p.getOwner()
             , new SimpleDateFormat("yyyy-MM-dd").format(p.getDate())
             , p.getType()
-            , ""
+            , comment
         );
         if(p.isVaccinated()) {
             params += "&vacuna=Vacunado";

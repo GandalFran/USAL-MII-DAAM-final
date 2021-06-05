@@ -4,20 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.view.View;
-import android.widget.Button;
-import android.widget.LinearLayout;
-import android.widget.ListView;
-import android.widget.ProgressBar;
-import android.widget.TextView;
-
-import com.daam.mascotas.bean.Pet;
-import com.daam.mascotas.bean.PetAdapter;
-import com.daam.mascotas.model.PetModel;
-import com.daam.mascotas.service.PetService;
-
-import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -30,16 +17,16 @@ public class MainActivity extends AppCompatActivity {
 
     public void normal(View view){
         Intent intent = new Intent(this, PetListActivity.class);
-        startActivityForResult(intent, 0);
+        startActivity(intent);
     }
 
     public void addPet(View view){
-        Intent intent = new Intent(this, ScraperActivity.class);
-        startActivityForResult(intent, 0);
+        Intent intent = new Intent(this, PetAddScraperActivity.class);
+        startActivity(intent);
     }
 
     public void selectPets(View view){
-        Intent intent = new Intent(this, ScraperActivity.class);
-        startActivityForResult(intent, 0);
+        Intent intent = new Intent(this, PetListScraperActivity.class);
+        startActivity(intent);
     }
 }

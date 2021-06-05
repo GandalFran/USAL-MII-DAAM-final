@@ -21,8 +21,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".ScraperActivity" />
         <activity android:name=".PetListActivity" />
+        <activity android:name=".PetAddScraperActivity" />
+        <activity android:name=".PetListScraperActivity" />
 
         <service
             android:name=".service.PetService"
