@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Mascotas</string>
+    <string name="vaccinatedYes">Vacunado</string>
+    <string name="vaccinatedNo">No vacunado</string>
+    <string name="stop">Parar</string>
+    <string name="start">Empezar</string>
+    <string name="eventsLabel">Eventos:</string>
+    <string name="processedLabel">Procesados:</string>
+    <string name="numReceivedLabel">Numero de mascotas recibidas: </string>
+    <string name="normal_activity">Lista de mascotas y notificaciones</string>
+    <string name="add_pet">Añadir mascota</string>
+    <string name="retrieve_certain_pets">Recuperar mascotas por ID</string>
+    <string name="min">Min</string>
+    <string name="max">Max</string>
+    <string name="load">Cargar</string>
+    <string name="exit">Salir</string>
+    <string name="notification_title">Mascotas</string>
+    <string name="notification_description">Nueva mascota detectada</string>
+    <string name="add">Añadir mascota</string>
+    <string name="pet_name">Nombre mascota</string>
+    <string name="owner_name">Nombre propietario</string>
+    <string name="pet_type">Tipo mascota</string>
+    <string name="other">Otro</string>
+    <string name="cat">Gato</string>
+    <string name="bird">Pajaro</string>
+    <string name="dog">Perro</string>
+    <string name="vaccinated">Esta vacunado: </string>
+    <string name="date">Fecha adopcion: </string>
+    <string name="changeDate">Cambiar fecha: </string>
+    <string name="comment">Comenario: </string>
+</resources>

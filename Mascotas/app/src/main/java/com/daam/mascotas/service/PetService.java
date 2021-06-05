@@ -5,6 +5,7 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
@@ -15,6 +16,7 @@ import android.widget.RemoteViews;
 import androidx.annotation.Nullable;
 
 import com.daam.mascotas.Constants;
+import com.daam.mascotas.PetListActivity;
 import com.daam.mascotas.R;
 import com.daam.mascotas.bean.Pet;
 import com.daam.mascotas.model.PetModel;
@@ -34,7 +36,7 @@ public class PetService extends Service {
     private static final int PET_NOTIFICATION_ID = 1;
     private final String NOTIFICATION_CHANNEL_ID = "com.daam.mascotas.petservice";
 
-    private int currentOrder = 0;
+    private int currentOrder = 1;
     private NotificationManager manager;
 
     @Override
@@ -82,9 +84,9 @@ public class PetService extends Service {
         while(true) {
             // retrieve p
             Pet p = PetService.this.checkForPets(Constants.CENTINEL_URL);
-            p.setOrder(this.currentOrder++);
+            p.setOrder(++this.currentOrder);
 
-            if(p!=null && !PetService.this.exists(p)){
+            if(!PetModel.build().getPending().contains(p) && !PetModel.build().getPets().contains(p)){
                 PetModel.build().addPending(p);
                 PetService.this.notifyPets();
             }
@@ -119,12 +121,12 @@ public class PetService extends Service {
     }
 
     private void notifyPets(){
-        Intent intent = new Intent(this, PetServiceReceiver.class);
-        intent.putExtra(CANCEL_KEY, false);
-        intent.putParcelableArrayListExtra(PET_KEY, (ArrayList<? extends Parcelable>) PetModel.build().getPending());
-        PendingIntent successPendingIntent = PendingIntent.getBroadcast (getApplicationContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        Intent successIntent = new Intent(PetService.this, PetServiceReceiver.class);
+        successIntent.putExtra(CANCEL_KEY, false);
+        successIntent.putParcelableArrayListExtra(PET_KEY, (ArrayList<? extends Parcelable>) PetModel.build().getPending());
+        PendingIntent successPendingIntent = PendingIntent.getBroadcast (getApplicationContext(), 0, successIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
-        Intent cancelIntent = new Intent(this, PetServiceReceiver.class);
+        Intent cancelIntent = new Intent(PetService.this, PetServiceReceiver.class);
         cancelIntent.putExtra(CANCEL_KEY, true);
         cancelIntent.putParcelableArrayListExtra(PET_KEY, (ArrayList<? extends Parcelable>) PetModel.build().getPending());
         PendingIntent deletePendingIntent = PendingIntent.getBroadcast (getApplicationContext(), 1, cancelIntent, PendingIntent.FLAG_UPDATE_CURRENT);
@@ -132,23 +134,12 @@ public class PetService extends Service {
         RemoteViews contentView = new RemoteViews("com.daam.mascotas", R.layout.notification_layout);
         contentView.setTextViewText(R.id.numReceivedNotification, Integer.valueOf(PetModel.build().getPending().size()).toString());
 
-        Notification.Builder builder = new Notification.Builder(
-                getApplicationContext(), NOTIFICATION_CHANNEL_ID)
-                .setSmallIcon(android.R.drawable.stat_sys_warning)
-                .setAutoCancel(true)
+        Notification.Builder builder = new Notification.Builder(this, NOTIFICATION_CHANNEL_ID)
+                .setSmallIcon(android.R.drawable.sym_def_app_icon)
                 .setContentIntent(successPendingIntent)
                 .setDeleteIntent(deletePendingIntent)
                 .setCustomContentView(contentView);
 
         this.manager.notify(PET_NOTIFICATION_ID, builder.build());
-    }
-
-    private boolean exists(Pet p) {
-        for(Pet pet: PetModel.build().getPending()){
-            if(pet.getId().equals(p.getId())){
-                return true;
-            }
-        }
-        return false;
     }
 }

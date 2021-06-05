@@ -31,7 +31,7 @@ public class Pet implements Parcelable, Serializable, Comparable<Pet> {
     private boolean vaccinated;
 
     public Pet(String id, Date date, String name, String owner, String type, boolean vaccinated) {
-        this.order = 0;
+        this.order = -1;
         this.id = id;
         this.date = date;
         this.name = name;
@@ -41,7 +41,7 @@ public class Pet implements Parcelable, Serializable, Comparable<Pet> {
     }
 
     protected Pet(Parcel in) {
-        this.order = 0;
+        this.order = in.readInt();
         this.id = in.readString();
         this.date = (Date) in.readSerializable();
         this.name = in.readString();
@@ -69,6 +69,7 @@ public class Pet implements Parcelable, Serializable, Comparable<Pet> {
 
     @Override
     public void writeToParcel(Parcel d, int flags) {
+        d.writeInt(this.order);
         d.writeString(this.id);
         d.writeSerializable(this.date);
         d.writeString(this.name);
@@ -77,28 +78,10 @@ public class Pet implements Parcelable, Serializable, Comparable<Pet> {
         d.writeInt(this.vaccinated ? 1 : 0);
     }
 
-    public ContentValues buildContentValues(){
-        ContentValues values = new ContentValues();
-        values.put(Pet.PET_ID_KEY, this.id);
-        values.put(Pet.PET_NAME_KEY, this.name);
-        values.put(Pet.PET_OWNER_KEY, this.owner);
-        values.put(Pet.PET_TYPE_KEY, this.type);
-        values.put(Pet.PET_DATE_KEY, new SimpleDateFormat(DATE_SERIALIZATION_FORMAT).format(this.date));
-        values.put(Pet.PET_VACCINATED_KEY, this.vaccinated);
-        return values;
-    }
-
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Pet pet = (Pet) o;
-        return vaccinated == pet.vaccinated &&
-                id.equals(pet.id) &&
-                Objects.equals(date, pet.date) &&
-                Objects.equals(name, pet.name) &&
-                Objects.equals(owner, pet.owner) &&
-                Objects.equals(type, pet.type);
+        Pet p = (Pet)o;
+        return this.id.equalsIgnoreCase(p.id);
     }
 
     @Override
@@ -176,6 +159,6 @@ public class Pet implements Parcelable, Serializable, Comparable<Pet> {
 
     @Override
     public int compareTo(Pet o) {
-        return Integer.compare(this.order, o.order);
+        return -Integer.compare(this.order, o.order);
     }
 }

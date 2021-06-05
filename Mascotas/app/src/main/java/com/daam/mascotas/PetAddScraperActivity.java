@@ -54,7 +54,7 @@ public class PetAddScraperActivity extends AppCompatActivity {
         this.commentInput =  findViewById(R.id.comment);
         this.vaccinatedInput =  findViewById(R.id.vaccinated);
 
-        this.dateInput.setText(new SimpleDateFormat("yyyy/MM/dd").format(new Date()));
+        this.dateInput.setText(new SimpleDateFormat("dd/MM/yyyy").format(new Date()));
 
         this.pets = new ArrayList<>();
         this.adapter = new PetAdapter(this, (ArrayList<Pet>) this.pets);
@@ -74,7 +74,7 @@ public class PetAddScraperActivity extends AppCompatActivity {
         boolean vaccinated = VACCINATED_TYPES[vaccinatedIndex];
         Date date = null;
         try {
-            date = new SimpleDateFormat("yyyy/MM/dd").parse(dateString);
+            date = new SimpleDateFormat("dd/MM/yyyy").parse(dateString);
         } catch (ParseException e) {
             date = new Date();
         }

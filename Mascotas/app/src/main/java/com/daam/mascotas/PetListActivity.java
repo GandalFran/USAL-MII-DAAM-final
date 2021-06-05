@@ -2,9 +2,12 @@ package com.daam.mascotas;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Parcelable;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
@@ -24,15 +27,15 @@ public class PetListActivity extends AppCompatActivity {
     public static final String PETS_LIST_STATUS = "PETS_LIST_STATUS";
 
     private Button button;
-    private TextView numEventsTv;
+    private static TextView numEventsTv;
     private ListView petsListView;
-    private TextView numProcessedTv;
+    private static TextView numProcessedTv;
     private ProgressBar progressBar;
     private LinearLayout elementsLayout1;
     private LinearLayout elementsLayout2;
 
     private PetModel model;
-    private PetAdapter adapter;
+    private static PetAdapter adapter;
     private boolean isServiceStarted;
 
     @Override
@@ -44,7 +47,9 @@ public class PetListActivity extends AppCompatActivity {
 
         // create storage and populate
         this.model  = PetModel.build();
-        this.populate();
+        if(this.model.getPets().isEmpty()) {
+            this.populate();
+        }
 
         // retrieve
         this.petsListView =  findViewById(R.id.pets);
@@ -59,17 +64,7 @@ public class PetListActivity extends AppCompatActivity {
         this.adapter = new PetAdapter(this, (ArrayList<Pet>) this.model.getPets());
         this.petsListView.setAdapter(this.adapter);
 
-        // retrieve the instance status
-        if (state != null) {
-            Parcelable status = state.getParcelable(PETS_LIST_STATUS);
-            this.petsListView.onRestoreInstanceState(status);
-        }
-
-    }
-
-    @Override
-    protected void onActivityResult(int code, int result, Intent data) {
-        super.onActivityResult(code, result, data);
+        // set num events and processed
         this.updateUi();
     }
 
@@ -111,13 +106,13 @@ public class PetListActivity extends AppCompatActivity {
         }).start();
     }
 
-    private void updateUi(){
-        this.numEventsTv.setText(this.model.getEvents());
-        this.numProcessedTv.setText(this.model.getProcessed());
-        this.adapter.notifyDataSetChanged();
-    }
-
     public void exit(View view) {
         this.finish();
+    }
+
+    public static void updateUi(){
+        PetListActivity.adapter.notifyDataSetChanged();
+        PetListActivity.numEventsTv.setText(Integer.valueOf(PetModel.build().getEvents()).toString());
+        PetListActivity.numProcessedTv.setText(Integer.valueOf(PetModel.build().getProcessed()).toString());
     }
 }

@@ -19,7 +19,6 @@ public class PetModel implements Parcelable {
 
     private int events;
     private int processed;
-    private PetAdapter adapter;
     private final List<Pet> pets;
     private final List<Pet> pendingPets;
 
@@ -42,6 +41,8 @@ public class PetModel implements Parcelable {
     protected PetModel(Parcel in) {
         this.pets = in.createTypedArrayList(Pet.CREATOR);
         this.pendingPets = in.createTypedArrayList(Pet.CREATOR);
+        this.events = in.readInt();
+        this.processed = in.readInt();
     }
 
     public static final Creator<PetModel> CREATOR = new Creator<PetModel>() {
@@ -65,6 +66,8 @@ public class PetModel implements Parcelable {
     public void writeToParcel(Parcel d, int flags) {
         d.writeTypedList(this.pets);
         d.writeTypedList(this.pendingPets);
+        d.writeInt(this.events);
+        d.writeInt(this.processed);
     }
 
     public void addPending(Pet p){
@@ -74,9 +77,9 @@ public class PetModel implements Parcelable {
 
     public void commitPending(){
         this.processed += this.pendingPets.size();
-        this.adapter.addAll(this.pendingPets);
+        this.pets.addAll(this.pendingPets);
         this.pendingPets.clear();
-        this.adapter.sort(Pet::compareTo);
+        this.pets.sort(Pet::compareTo);
     }
 
     public void dismissPending(){

@@ -24,8 +24,8 @@
     <string name="cat">Cat</string>
     <string name="bird">Bird</string>
     <string name="dog">Dog</string>
-    <string name="vaccinated">Is vaccinated</string>
-    <string name="date">Adoption date</string>
-    <string name="changeDate">Change date</string>
-    <string name="comment">"Comment: "</string>
+    <string name="vaccinated">Is vaccinated: </string>
+    <string name="date">Adoption date: </string>
+    <string name="changeDate">Change date: </string>
+    <string name="comment">Comment: </string>
 </resources>
